@@ -91,18 +91,21 @@ def perform_strategy(symbol, timeframe):
         index_signal = None
         bot_signal = None
         bot_type = None
-        for index, row in df.tail(5).iterrows():
+        range = None
+        for index, row in df.tail(3).iterrows():
             if row['signal'] in ['L', 'S'] and (row['lower_band'] != row['upper_band']):
                 index_signal = index
                 bot_signal = row['signal']
                 bot_type = row['type']
                 low = row['low']
                 high = row['high']
+                range = high - low
                 break
-        if index_signal is not None:
+        if index_signal is not None and index_signal < 999:
             row = df.loc[index_signal+1]
+            row_range = row['high'] - row['low']
             # long condition
-            if bot_signal == 'L' and bot_type == 'R' and row['type'] == 'G':
+            if bot_signal == 'L' and bot_type == 'R' and row['type'] == 'G' and (row_range >= (range/2)):
                 limit = row['close']
                 stoploss = low
                 stoploss_percentage = (
@@ -115,7 +118,7 @@ def perform_strategy(symbol, timeframe):
                     # call send mess function here
                     send_message(symbol, 'L', timeframe, limit,
                                  tp, stoploss)
-            elif bot_signal == 'S' and bot_type == 'G' and row['type'] == 'R':
+            elif bot_signal == 'S' and bot_type == 'G' and row['type'] == 'R' and (row_range >= (range/2)):
                 limit = row['close']
                 stoploss = high
                 stoploss_percentage = (
@@ -132,6 +135,8 @@ def perform_strategy(symbol, timeframe):
         print("Error fetching data:", response.status_code)
         return None
 
+
+# perform_strategy('BTCUSDT', '5m')
 
 def task_range(start, end):
     for i in range(start, end + 1):
