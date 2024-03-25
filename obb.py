@@ -21,13 +21,13 @@ def get_all_ticker():
         return None
 
 
-def send_message(symbol, side, timeframe, limit, tp, stoploss, levelrage):
+def send_message(symbol, side, timeframe, limit, tp, stoploss):
     bot_token = '6637417095:AAEhdi-XyNF_JHlANK08uj9L_14rB9g_1Z8'
     chat_id = -1002096734555
 
     url = f'https://api.telegram.org/bot{bot_token}/sendMessage'
     if side == "L":
-        message_text = f"""🟢🟢[BOT {timeframe}] - x {levelrage}]🟢🟢
+        message_text = f"""🟢🟢[BOT {timeframe}]]🟢🟢
 {symbol} - LONG LIMIT
 LIMIT: {limit}
 SL: {stoploss}
@@ -39,7 +39,7 @@ TP: {tp}
             'text': message_text,
         }
     elif side == "S":
-        message_text = f"""🔴🔴[BOT {timeframe}] - x {levelrage}]🔴🔴
+        message_text = f"""🔴🔴[BOT {timeframe}]🔴🔴
 {symbol} - SELL LIMIT
 LIMIT: {limit}
 SL: {stoploss}
@@ -108,28 +108,26 @@ def perform_strategy(symbol, timeframe):
                 stoploss_percentage = (
                     (limit - stoploss) / limit) * 100
                 tp = limit * (1 + stoploss_percentage * 0.015)
-                levelrage = round(0.3 / (stoploss_percentage / 100))
                 if symbol_dict[symbol] == 'L':
                     pass
                 else:
                     symbol_dict[symbol] = 'L'
                     # call send mess function here
                     send_message(symbol, 'L', timeframe, limit,
-                                 tp, stoploss, levelrage)
+                                 tp, stoploss)
             elif bot_signal == 'S' and bot_type == 'G' and row['type'] == 'R':
                 limit = row['close']
                 stoploss = high
                 stoploss_percentage = (
                     (stoploss - limit) / limit) * 100
                 tp = limit * (1 - (stoploss_percentage * 1.5 / 100))
-                levelrage = round(0.3 / (stoploss_percentage / 100)), levelrage
                 if symbol_dict[symbol] == 'S':
                     pass
                 else:
                     symbol_dict[symbol] = 'S'
                     # call send mess function here
                     send_message(symbol, 'S', timeframe, limit,
-                                 tp, stoploss, levelrage)
+                                 tp, stoploss)
     else:
         print("Error fetching data:", response.status_code)
         return None
